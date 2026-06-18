@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Ticket {
+  id           Int      @id @default(autoincrement())
+  ticketNumber String   @unique @map("ticket_number")
+  title        String
+  description  String
+  category     String
+  priority     String   @default("normal")
+  status       String   @default("new")
+  email        String
+  course       String?
+  room         String?
+  accessToken  String   @unique @map("access_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  history     TicketHistory[]
+  attachments TicketAttachment[]
+
+  @@map("tickets")
+}
+
+model TicketHistory {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int      @map("ticket_id")
+  oldStatus String?  @map("old_status")
+  newStatus String   @map("new_status")
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_history")
+}
+
+model TicketAttachment {
+  id          Int      @id @default(autoincrement())
+  ticketId    Int      @map("ticket_id")
+  filename    String
+  contentType String   @map("content_type")
+  filePath    String   @map("file_path")
+  fileSize    Int      @map("file_size")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_attachments")
+}
